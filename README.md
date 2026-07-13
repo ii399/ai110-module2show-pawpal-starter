@@ -54,6 +54,24 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 #   ...
 ```
 
+```
+Today's Schedule
+----------------------------------------
+Morning    | Feed Breakfast       | Luna   | 10 min
+Morning    | Morning Walk         | Buddy  | 30 min
+Afternoon  | Play Time            | Buddy  | 20 min
+Evening    | Brush Fur            | Luna   | 15 min
+----------------------------------------
+Total Time: 75 minutes
+
+Daily plan for Jordan: 4 task(s), 75/90 min used.
+08:00 AM - Feed Breakfast (Luna, 10 min) [required, priority: high]
+08:10 AM - Morning Walk (Buddy, 30 min) [required, priority: high]
+08:40 AM - Play Time (Buddy, 20 min) [priority: medium]
+09:00 AM - Brush Fur (Luna, 15 min) [priority: low]
+
+```
+
 ## 🧪 Testing PawPal+
 
 ```bash
