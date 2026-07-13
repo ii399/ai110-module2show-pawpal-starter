@@ -5,7 +5,20 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+Add and manage a pet 
+A user should be able to enter a pet's basic informstion, such as its name, species, age and specificcare needs. The user should be able tomupdate this information when the pet's needs change.
+
+Create and manage pet care tasks
+A user should be able to add tasks such as feeding, walking, giving medication, grooming, or enrichment activities. Each task can include a duration, priority level, category, and completion status.
+
+Generate and review a daily care plan
+A user should be able to enter how much time they have available and their care preferences. The system should then select appropriate tasks for the day, display the recommended schedule, and explain why each task was included.
+
 - What classes did you include, and what responsibilities did you assign to each?
+Pet - Store and manage information about an individual pet.
+Owner - Store the owner's availability and preferences for completing pet care tasks.
+Task -Represent a single pet care activity and track its status.
+Scheduler - Generate and manage the daily pet care plan by selecting tasks that satisfy constraints.
 
 **b. Design changes**
 

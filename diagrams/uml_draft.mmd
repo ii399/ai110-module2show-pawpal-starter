@@ -1,0 +1,77 @@
+classDiagram
+    class Owner {
+        +str name
+        +int available_time
+        +list~str~ preferred_task_times
+        +dict task_preferences
+        +list~str~ unavailable_times
+        +int maximum_task_duration
+        +list~Pet~ pets
+
+        +add_pet(pet) void
+        +remove_pet(pet) void
+        +update_available_time(minutes) void
+        +update_preferences(preferences) void
+        +get_preferences() dict
+        +can_perform_task(task) bool
+    }
+
+    class Pet {
+        +str name
+        +str species
+        +int age
+        +list~str~ care_needs
+        +str medical_notes
+        +str activity_level
+        +list~Task~ tasks
+
+        +get_pet_info() dict
+        +update_pet_info(name, species, age) void
+        +add_care_need(care_need) void
+        +remove_care_need(care_need) void
+        +add_task(task) void
+        +remove_task(task) void
+    }
+
+    class Task {
+        +str task_name
+        +str category
+        +int duration
+        +str priority
+        +bool completed
+        +str preferred_time
+        +bool required
+        +Pet pet
+
+        +mark_complete() void
+        +mark_incomplete() void
+        +update_priority(priority) void
+        +update_duration(duration) void
+        +get_task_details() dict
+        +is_completed() bool
+    }
+
+    class Scheduler {
+        +Owner owner
+        +list~Task~ available_tasks
+        +list~Task~ daily_schedule
+        +int total_scheduled_time
+        +str explanation
+
+        +collect_tasks() list~Task~
+        +generate_schedule() list~Task~
+        +prioritize_tasks() list~Task~
+        +filter_completed_tasks() list~Task~
+        +filter_tasks_by_time() list~Task~
+        +calculate_total_time() int
+        +add_task_to_schedule(task) void
+        +explain_schedule() str
+        +get_schedule_summary() dict
+    }
+
+    Owner "1" o-- "1..*" Pet : owns
+    Pet "1" o-- "0..*" Task : has
+    Owner "1" --> "1" Scheduler : uses
+    Scheduler ..> Owner : checks preferences
+    Scheduler ..> Pet : collects care tasks
+    Scheduler ..> Task : prioritizes and schedules
