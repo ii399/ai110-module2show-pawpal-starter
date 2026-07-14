@@ -86,18 +86,38 @@ Sample test output:
 
 ```
 # Paste your pytest output here
+================================================================ test session starts ========================================================
+platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\projects\codepath\AI110\ai110-module2show-pawpal-starter
+configfile: pytest.ini
+testpaths: tests
+collected 2 items                                                                                                                                     
+
+tests\test_pawpal.py ..                                                                                                                [100%]
+================================================================= 2 passed in 0.01s =========================================================
+
 ```
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+All scheduling logic lives in `pawpal_system.py`. Each feature and the method
+that implements it:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.prioritize_tasks()` | `sort_by_time()` orders tasks chronologically by `preferred_time` ("HH:MM", compared as zero-padded strings); `prioritize_tasks()` orders by required → priority → shorter duration. |
+| Filtering | `Scheduler.filter_tasks()`, `Scheduler.filter_completed_tasks()`, `Scheduler.filter_tasks_by_time()` | `filter_tasks(completed=?, pet_name=?)` filters by completion status and/or pet; `filter_completed_tasks()` drops finished tasks; `filter_tasks_by_time()` drops tasks the owner can't individually fit (`Owner.can_perform_task()`). |
+| Conflict handling | `Scheduler.detect_conflicts()` | Pairwise check of each task's `[preferred_time, +duration)` window (same pet or different pets). Returns a list of warning strings; never raises. Touching edges don't conflict. |
+| Recurring tasks | `Task.mark_complete()` → `Task.next_occurrence()` | Completing a `"daily"` / `"weekly"` task auto-creates the next instance on the same pet. `next_occurrence()` computes the new `due_date` with `timedelta` (+1 day / +7 days). |
+| Budget fit | `Scheduler.generate_schedule()` | Greedily adds prioritized tasks while they fit `Owner.available_time`; never overflows the budget (may drop a task that doesn't fit). |
+| Timed plan output | `Scheduler.scheduled_with_times()`, `Scheduler.explain_schedule()` | Assigns back-to-back `HH:MM` start times from `day_start`; renders a readable plan with 12-hour AM/PM times. |
+
+### Feature summary
+
+- **Sorting behavior** — `Scheduler.sort_by_time()` (chronological, by `preferred_time`).
+- **Filtering behavior** — `Scheduler.filter_tasks()` (by pet and/or completion status).
+- **Conflict detection** — `Scheduler.detect_conflicts()` (overlapping time windows → warnings).
+- **Recurring task logic** — `Task.mark_complete()` via `Task.next_occurrence()` (daily/weekly re-creation with `timedelta`).
 
 ## 📸 Demo Walkthrough
 

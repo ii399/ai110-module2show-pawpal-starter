@@ -23,8 +23,10 @@ Scheduler - Generate and manage the daily pet care plan by selecting tasks that 
 **b. Design changes**
 
 - Did your design change during implementation?
+Yes
 - If yes, describe at least one change and why you made it.
-
+The UML initially showed an Owner and Pet as separate classes, but it did not explicitly model ownership in the class attributes.
+The application needs an owner to manage one or more pets. By storing a list of pets in the Owner class, the Scheduler can easily retrieve all pets and their associated tasks when generating the daily schedule. This also better reflects the real-world relationship that one owner may have multiple pets.
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
@@ -37,8 +39,10 @@ Scheduler - Generate and manage the daily pet care plan by selecting tasks that 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+generate_schedule() drops a task that doesn't fit the remaining time, even if it is a required one, rather than overflowing available_time, so it guarantees the time budgeted over guaranteeing required tasks get done.
 
+- Why is that tradeoff reasonable for this scenario?
+For a planning tool, producing a schedule that can be relied on builds trust instead of producing a schedule that silently overruns it. An owner can easily raise available_time, mark a task non-required, or move it to another day. The scheduler leans on the owner for a judgment call rather than making a forced plan.
 ---
 
 ## 3. AI Collaboration

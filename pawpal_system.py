@@ -17,8 +17,9 @@ Scheduler : the "brain" — collects tasks across pets, filters, prioritizes,
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from enum import IntEnum
+from itertools import combinations
 
 
 class Priority(IntEnum):
@@ -40,11 +41,43 @@ class Task:
     completed: bool = False
     preferred_time: str = ""
     required: bool = False
+    frequency: str = "none"  # "none", "daily", or "weekly"
+    due_date: date | None = None
     pet: Pet | None = None
 
+    # Recurrence intervals: how far ahead the next occurrence is due.
+    _RECUR_INTERVALS = {"daily": timedelta(days=1), "weekly": timedelta(weeks=1)}
+
+    def next_occurrence(self) -> Task | None:
+        """Return a fresh, incomplete copy of this task for its next due date.
+
+        Returns None for non-recurring tasks. For "daily"/"weekly" the new
+        due_date is computed with timedelta from this task's due_date (or
+        today if it has none): +1 day for daily, +7 days for weekly.
+        """
+        interval = self._RECUR_INTERVALS.get(self.frequency)
+        if interval is None:
+            return None
+        base = self.due_date or date.today()
+        return Task(
+            task_name=self.task_name,
+            category=self.category,
+            duration=self.duration,
+            priority=self.priority,
+            completed=False,
+            preferred_time=self.preferred_time,
+            required=self.required,
+            frequency=self.frequency,
+            due_date=base + interval,
+            pet=None,  # the owning Pet is set when it's added via add_task()
+        )
+
     def mark_complete(self) -> None:
-        """Mark this task as done."""
+        """Mark this task done; for recurring tasks, spawn the next occurrence."""
         self.completed = True
+        upcoming = self.next_occurrence()
+        if upcoming is not None and self.pet is not None:
+            self.pet.add_task(upcoming)
 
     def mark_incomplete(self) -> None:
         """Mark this task as not done."""
@@ -70,6 +103,8 @@ class Task:
             "completed": self.completed,
             "preferred_time": self.preferred_time,
             "required": self.required,
+            "frequency": self.frequency,
+            "due_date": self.due_date.isoformat() if self.due_date else None,
             "pet": self.pet.name if self.pet else None,
         }
 
@@ -227,6 +262,37 @@ class Scheduler:
             key=lambda t: (not t.required, -int(t.priority), t.duration),
         )
 
+    def sort_by_time(self, tasks: list[Task] | None = None) -> list[Task]:
+        """Sort tasks chronologically by their preferred_time ('HH:MM').
+
+        Zero-padded 24-hour 'HH:MM' strings compare correctly as plain
+        strings ('07:30' < '12:15' < '18:00'), so the lambda keys directly
+        on the string. For unpadded or 12-hour input you'd parse to numbers
+        instead, e.g. key=lambda t: [int(p) for p in t.preferred_time.split(":")].
+        """
+        tasks = self.available_tasks if tasks is None else tasks
+        return sorted(tasks, key=lambda t: t.preferred_time)
+
+    def filter_tasks(
+        self,
+        completed: bool | None = None,
+        pet_name: str | None = None,
+        tasks: list[Task] | None = None,
+    ) -> list[Task]:
+        """Filter tasks by completion status and/or owning pet name.
+
+        Pass completed=True/False to keep only (in)complete tasks, and/or
+        pet_name to keep only that pet's tasks. Both are optional; omitting
+        both returns every task unchanged.
+        """
+        tasks = self.available_tasks if tasks is None else tasks
+        result = list(tasks)
+        if completed is not None:
+            result = [t for t in result if t.is_completed() == completed]
+        if pet_name is not None:
+            result = [t for t in result if t.pet is not None and t.pet.name == pet_name]
+        return result
+
     def add_task_to_schedule(self, task: Task) -> None:
         """Append a task to the daily schedule if not already present."""
         if not any(t is task for t in self.daily_schedule):
@@ -296,6 +362,56 @@ class Scheduler:
             "available_time": self.owner.available_time,
             "tasks": [t.task_name for t in self.daily_schedule],
         }
+
+    @staticmethod
+    def _to_minutes(hhmm: str) -> int | None:
+        """Convert an 'HH:MM' string to minutes-since-midnight, or None if unparseable."""
+        try:
+            hours, minutes = hhmm.split(":")
+            return int(hours) * 60 + int(minutes)
+        except (ValueError, AttributeError):
+            return None
+
+    @staticmethod
+    def _fmt(minutes: int) -> str:
+        """Format minutes-since-midnight back to 'HH:MM'."""
+        return f"{minutes // 60:02d}:{minutes % 60:02d}"
+
+    def detect_conflicts(self, tasks: list[Task] | None = None) -> list[str]:
+        """Return warning strings for tasks whose time windows overlap.
+
+        Lightweight, pairwise check: each task occupies the window
+        [preferred_time, preferred_time + duration). Two tasks conflict when
+        their windows overlap, whether they belong to the same pet or
+        different pets (the owner can only do one thing at a time). Completed
+        and untimed tasks are ignored. Returns [] when there are no conflicts;
+        it never raises, so callers can just print the warnings.
+        """
+        tasks = self.available_tasks if tasks is None else tasks
+
+        # Keep only incomplete tasks that have a parseable start time.
+        timed = []
+        for task in tasks:
+            if task.is_completed():
+                continue
+            start = self._to_minutes(task.preferred_time)
+            if start is not None:
+                timed.append((start, task))
+
+        warnings = []
+        for (a_start, a), (b_start, b) in combinations(timed, 2):
+            a_end, b_end = a_start + a.duration, b_start + b.duration
+            # Half-open overlap: touching edges (e.g. 08:30-08:30) don't conflict.
+            if a_start < b_end and b_start < a_end:
+                a_pet = a.pet.name if a.pet else "unassigned"
+                b_pet = b.pet.name if b.pet else "unassigned"
+                warnings.append(
+                    f"WARNING: '{a.task_name}' ({a_pet} "
+                    f"{self._fmt(a_start)}-{self._fmt(a_end)}) overlaps "
+                    f"'{b.task_name}' ({b_pet} "
+                    f"{self._fmt(b_start)}-{self._fmt(b_end)})"
+                )
+        return warnings
 
 
 def _demo() -> None:
