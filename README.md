@@ -155,10 +155,12 @@ that implements it:
 
 Describe your app in numbered steps so a reader can follow along without watching a video:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. **Launch it** — from the activated venv, run `streamlit run app.py` and open the page in your browser.
+2. **Set owner details in the sidebar** — enter the owner's name, the minutes available today, and an optional cap on how long any single task can be.
+3. **Add a pet** — fill in the pet's name, species, and age, then click **Add pet**. The pet is saved in the session, so it isn't wiped when the page reruns.
+4. **Give the pet a task** — pick the pet, enter a title, category, duration, and priority, and mark it required if it must happen. Click **Add task**. Repeat to build up tasks across one or more pets.
+5. **Review what you've entered** — the "Current pets & tasks" section lists each pet with its tasks and updates automatically as you add more.
+6. **Set the start time and generate** — enter the time the day begins (e.g. `08:00`) and click **Generate schedule**.
+7. **Read the plan** — the app shows a timed schedule with AM/PM start times, ordered by priority and packed into the available time, plus a short summary of how many tasks fit and how much of the budget was used.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
