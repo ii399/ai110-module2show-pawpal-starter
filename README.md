@@ -78,6 +78,40 @@ Daily plan for Jordan: 4 task(s), 75/90 min used.
 # Run the full test suite:
 pytest
 
+## command to run tests: 
+python -m pytest
+
+## Brief description of what your tests cover:
+```
+1 Basic Task Functionality
+The test suite verifies that marking a task as complete correctly updates its completion status. It also confirms that adding a task to a pet successfully increases the number of tasks associated with that pet.
+
+2 Recurring Task Creation
+The tests ensure that recurring tasks behave as expected. Completing a daily task creates a new task due one day later, completing a weekly task creates a new task due seven days later, and completing a one-time task does not create any additional tasks.
+
+3 Chronological Task Sorting
+The test suite confirms that tasks are returned in chronological order based on their preferred time, even when they are initially added in a different order.
+
+4 Time Conflict Detection
+The scheduler is tested to ensure it correctly identifies overlapping tasks, regardless of whether they belong to the same pet or different pets. It also verifies that back-to-back tasks, which only touch at their boundaries, are not incorrectly flagged as conflicts.
+
+5 Current Test Coverage and Remaining Gaps
+Overall, the tests cover individual, self-contained behaviors such as task state changes, recurring task generation, chronological sorting, and conflict detection. 
+
+3-star Confidence Level
+Th tests do not yet test the complete generate_schedule() workflow, including budget constraints, priority-based scheduling, or handling empty inputs. These missing end-to-end scenarios are the primary reason for the 3-star confidence rating.
+
+```
+================================================================ test session starts======================================================
+platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\projects\codepath\AI110\ai110-module2show-pawpal-starter
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.14.2
+collected 9 items                                                                                                                                     
+
+tests\test_pawpal.py                                                                                                          [100%]================================================================= 9 passed in 0.03s =================================================
+
 # Run with coverage:
 pytest --cov
 ```
@@ -86,16 +120,14 @@ Sample test output:
 
 ```
 # Paste your pytest output here
-================================================================ test session starts ========================================================
+================================================================ test session starts ================================================
 platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
 rootdir: C:\projects\codepath\AI110\ai110-module2show-pawpal-starter
 configfile: pytest.ini
 testpaths: tests
 collected 2 items                                                                                                                                     
 
-tests\test_pawpal.py ..                                                                                                                [100%]
-================================================================= 2 passed in 0.01s =========================================================
-
+tests\test_pawpal...                                                                                                        [100%]=========================================================== 2 passed in 0.01s ======================================================
 ```
 
 ## 📐 Smarter Scheduling

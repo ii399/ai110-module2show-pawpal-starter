@@ -94,3 +94,39 @@ def test_no_conflict_for_touching_tasks():
     scheduler.collect_tasks()
 
     assert scheduler.detect_conflicts() == []
+
+
+# --- Sorting correctness ---------------------------------------------------
+
+def test_sort_by_time_returns_chronological_order():
+    """sort_by_time() returns tasks ordered by preferred_time, earliest first."""
+    owner = Owner("Jordan", available_time=240)
+    pet = Pet("Buddy", "dog", 4)
+    owner.add_pet(pet)
+    # Added deliberately out of chronological order.
+    pet.add_task(Task("Evening", "walk", 20, Priority.LOW, preferred_time="18:00"))
+    pet.add_task(Task("Morning", "walk", 20, Priority.LOW, preferred_time="07:30"))
+    pet.add_task(Task("Noon", "walk", 20, Priority.LOW, preferred_time="12:15"))
+
+    scheduler = Scheduler(owner)
+    scheduler.collect_tasks()
+    ordered = scheduler.sort_by_time()
+
+    assert [t.preferred_time for t in ordered] == ["07:30", "12:15", "18:00"]
+    assert [t.task_name for t in ordered] == ["Morning", "Noon", "Evening"]
+
+
+# --- Conflict detection: duplicate times -----------------------------------
+
+def test_detect_conflicts_flags_duplicate_times_same_pet():
+    """Two tasks for the SAME pet at the identical time are flagged."""
+    owner = Owner("Jordan", available_time=120)
+    pet = Pet("Buddy", "dog", 4)
+    owner.add_pet(pet)
+    pet.add_task(Task("Walk", "exercise", 30, Priority.HIGH, preferred_time="09:00"))
+    pet.add_task(Task("Vet call", "admin", 15, Priority.MEDIUM, preferred_time="09:00"))
+
+    scheduler = Scheduler(owner)
+    scheduler.collect_tasks()
+
+    assert len(scheduler.detect_conflicts()) == 1
